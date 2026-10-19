@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-apilayer_api_key = os.getenv("API_KEY")
+apilayer_api_key = os.getenv("APILAYER_API_KEY")
 alpha_vantage_api_key = os.getenv("ALPHA_VANTAGE_ACCESS_KEY")
 path = Path(__file__).resolve().parent.parent / "user_settings.json"
 
