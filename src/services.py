@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 from datetime import datetime
@@ -13,6 +14,13 @@ load_dotenv()
 apilayer_api_key = os.getenv("APILAYER_API_KEY")
 alpha_vantage_api_key = os.getenv("ALPHA_VANTAGE_ACCESS_KEY")
 path = Path(__file__).resolve().parent.parent / "user_settings.json"
+
+
+path_to_log = Path(__file__).resolve().parent.parent / "logs" / "services.log"
+logger = logging.getLogger("services")
+file_handler = logging.FileHandler(path_to_log, "w", encoding="utf-8")
+logger.addHandler(file_handler)
+logger.setLevel("DEBUG")
 
 
 def currency_rates() -> list[dict]:
@@ -78,6 +86,7 @@ def stock_prices() -> list:
 def investment_bank(
     month: str, transactions: List[Dict[str, Any]], limit: int
 ) -> float:
+    logger.info("Начат расчет накоплений за месяц")
     date_obj = datetime.strptime(month, "%Y-%m")
 
     can_save = 0
@@ -94,5 +103,10 @@ def investment_bank(
             amount = transaction["Сумма операции"]
             rounded_amount = ((amount + limit - 1) // limit) * limit
             can_save += rounded_amount - amount
+
+            logger.debug(
+                f"Операция за {transaction_date}: сумма {amount}, накоплено {rounded_amount-amount}",
+            )
+    logger.info(f"Расчёт накоплений за месяц завершен. Итого: {can_save}")
 
     return can_save
