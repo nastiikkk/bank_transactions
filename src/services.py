@@ -66,7 +66,6 @@ def stock_prices() -> list:
 
         response = response.json()
         quote = response.get("Global Quote")
-
         if not quote:
             raise ValueError("Не удалось получить цену акции")
 
