@@ -1,7 +1,9 @@
+from datetime import datetime
 import json
 import os
 import time
 from pathlib import Path
+from typing import Any, Dict, List
 
 import requests
 from dotenv import load_dotenv
@@ -72,3 +74,20 @@ def stock_prices() -> list:
         time.sleep(1)
 
     return prices
+
+
+def investment_bank(month: str, transactions: List[Dict[str, Any]], limit: int) -> float:
+    date_obj = datetime.strptime(month, '%Y-%m')
+
+    can_save = 0
+
+    for transaction in transactions:
+        transaction['Дата операции'] = datetime.strptime(transaction['Дата операции'], '%Y-%m-%d')
+        transaction_date = transaction['Дата операции']
+        if transaction_date.year == date_obj.year and transaction_date.month == date_obj.month:
+            amount = transaction['Сумма операции']
+            rounded_amount = ((amount + limit - 1) // limit) * limit
+            can_save += rounded_amount - amount
+    
+    return can_save
+    
