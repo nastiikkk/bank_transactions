@@ -60,9 +60,7 @@ def currency_rates() -> list[dict]:
 def stock_prices() -> list[dict]:
     """Получает стоимость акций из S&P 500 через API"""
     if alpha_vantage_api_key is None:
-        raise ValueError(
-            "ALPHA_VANTAGE_ACCESS_KEY не найден в переменных окружения"
-        )
+        raise ValueError("ALPHA_VANTAGE_ACCESS_KEY не найден в переменных окружения")
     with open(path, "r") as file:
         settings = json.load(file)
     stocks = settings["user_stocks"]
@@ -95,6 +93,7 @@ def stock_prices() -> list[dict]:
 def investment_bank(
     month: str, transactions: List[Dict[str, Any]], limit: int
 ) -> float:
+    """Возвращает сумму, которую удалось бы отложить в «Инвесткопилку»"""
     logger.info("Начат расчет накоплений за месяц")
     date_obj = datetime.strptime(month, "%Y-%m")
 

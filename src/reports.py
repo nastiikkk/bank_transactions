@@ -21,7 +21,7 @@ logger.setLevel("DEBUG")
 def spending_by_weekday(
     transactions: pd.DataFrame, date: Optional[str] = None
 ) -> pd.DataFrame:
-
+    """Возвращает средние траты в каждый из дней недели за последние три месяца"""
     if date is None:
         date_obj = datetime.now()
     else:

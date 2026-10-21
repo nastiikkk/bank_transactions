@@ -1,5 +1,5 @@
 import os
-from unittest.mock import mock_open, patch, Mock
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 import requests
@@ -15,6 +15,7 @@ apilayer_api_key = os.getenv("APILAYER_API_KEY")
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD", "EUR"]}'))
 def test_currency_rates(mock_get: Mock) -> None:
+    """Проверяет получение и преобразование курсов валют"""
 
     mock_get.return_value.json.return_value = {
         "success": True,
@@ -41,6 +42,7 @@ def test_currency_rates(mock_get: Mock) -> None:
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD"]}'))
 def test_currency_rates_error(mock_get: Mock) -> None:
+    """Проверяет обработку ошибки при получении курсов валют от API"""
     mock_get.return_value.json.return_value = {"success": False}
 
     with pytest.raises(ValueError, match="Не удалось получить курсы валют"):
@@ -56,6 +58,7 @@ def test_currency_rates_error(mock_get: Mock) -> None:
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD", "EUR"]}'))
 def test_currency_rates_http_error(mock_raise: Mock) -> None:
+    """Проверяет обработку HTTP-ошибки при запросе курсов валют"""
 
     mock_raise.return_value.raise_for_status.side_effect = requests.exceptions.HTTPError
 
@@ -69,6 +72,7 @@ def test_currency_rates_http_error(mock_raise: Mock) -> None:
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_stocks": ["AAPL"]}'))
 def test_stock_prices(mock_get: Mock, mock_sleep: Mock) -> None:
+    """Проверяет получение и округление цен акций"""
     mock_get.return_value.json.return_value = {"Global Quote": {"05. price": "1.1234"}}
 
     result = stock_prices()
@@ -82,6 +86,7 @@ def test_stock_prices(mock_get: Mock, mock_sleep: Mock) -> None:
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_stocks": ["AAPL"]}'))
 def test_stock_prices_error(mock_get: Mock, mock_sleep: Mock) -> None:
+    """Проверяет обработку отсутствия данных о цене акции"""
     mock_get.return_value.json.return_value = {}
 
     with pytest.raises(ValueError, match="Не удалось получить цену акции"):
@@ -91,6 +96,7 @@ def test_stock_prices_error(mock_get: Mock, mock_sleep: Mock) -> None:
 
 
 def test_investment_bank() -> None:
+    """Проверяет расчёт суммы, доступной для инвестирования за месяц"""
     result = investment_bank(
         "2026-10",
         [
@@ -105,6 +111,7 @@ def test_investment_bank() -> None:
 
 
 def test_investment_bank_transaction_outside_month() -> None:
+    """Проверяет, что операции за пределами указанного месяца не учитываются"""
     result = investment_bank(
         "2026-01", [{"Дата операции": "2026-10-11", "Сумма операции": 1023}], 100
     )

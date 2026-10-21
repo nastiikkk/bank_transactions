@@ -118,6 +118,7 @@ def income(
 
 
 def main(date: str, param: str = "M") -> dict:
+    """Формирует данные для главной страницы банковского приложения"""
     logger.info("Начата обработка главной страницы")
     operations = convert_dates(read_excel_file())
 
