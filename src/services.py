@@ -19,6 +19,8 @@ path = Path(__file__).resolve().parent.parent / "user_settings.json"
 path_to_log = Path(__file__).resolve().parent.parent / "logs" / "services.log"
 logger = logging.getLogger("services")
 file_handler = logging.FileHandler(path_to_log, "w", encoding="utf-8")
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel("DEBUG")
 
