@@ -1,14 +1,13 @@
 import logging
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
+from typing import Any, Callable, Optional
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from src.utils import convert_dates
-from functools import wraps
-from typing import Any, Callable, Optional
-
 
 path_to_log = Path(__file__).resolve().parent.parent / "logs" / "reports.log"
 
@@ -31,8 +30,10 @@ def save_report(
         def wrapper(*args: Any, **kwargs: Any) -> pd.DataFrame:
             result = report_func(*args, **kwargs)
 
-            path_to_report = Path(__file__).resolve().parent.parent / "reports" / filename
-
+            path_to_report = (
+                Path(__file__).resolve().parent.parent / "reports" / filename
+            )
+            path_to_report.parent.mkdir(parents=True, exist_ok=True)
             result.to_csv(path_to_report, index=False, encoding="utf-8")
 
             return result
@@ -43,6 +44,7 @@ def save_report(
         return decorator(func)
 
     return decorator
+
 
 @save_report
 def spending_by_weekday(
