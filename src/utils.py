@@ -6,8 +6,7 @@ path = Path(__file__).resolve().parent.parent / "data" / "operations.xlsx"
 
 
 def read_excel_file() -> pd.DataFrame:
-    df = pd.read_excel(path)
-    return df
+    return pd.read_excel(path)
 
 
 def convert_dates(data: pd.DataFrame) -> pd.DataFrame:
