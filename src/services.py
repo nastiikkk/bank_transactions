@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-apilayer_api_key = os.getenv("APILAYER_API_KEY")
+exchangerate_api_key = os.getenv("EXCHANGERATE_API_KEY")
 alpha_vantage_api_key = os.getenv("ALPHA_VANTAGE_ACCESS_KEY")
 path = Path(__file__).resolve().parent.parent / "user_settings.json"
 
@@ -33,24 +33,23 @@ def currency_rates() -> list[dict]:
 
     currencies = settings["user_currencies"]
 
-    url = "https://api.apilayer.com/exchangerates_data/latest"
+    if exchangerate_api_key is None:
+        raise ValueError("EXCHANGERATE_API_KEY не найден в переменных окружения")
 
-    params = {"base": "RUB", "symbols": ",".join(currencies)}
-
-    if apilayer_api_key is None:
-        raise ValueError("APILAYER_API_KEY не найден в переменных окружения")
-
-    headers = {"apikey": apilayer_api_key}
-    response = requests.get(url, headers=headers, params=params)
+    url = (
+        f"https://v6.exchangerate-api.com/v6/"
+        f"{exchangerate_api_key}/latest/RUB"
+    )
+    response = requests.get(url)
 
     response.raise_for_status()
 
     response = response.json()
 
-    if response.get("success") is False:
+    if response.get("result") != "success":
         raise ValueError("Не удалось получить курсы валют")
 
-    rates = response["rates"]
+    rates = response["conversion_rates"]
     return [
         {"currency": currency, "rate": round(1 / rates[currency], 2)}
         for currency in currencies

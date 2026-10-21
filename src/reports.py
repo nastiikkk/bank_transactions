@@ -85,6 +85,7 @@ def spending_by_weekday(
         )["Сумма операции"]
         .mean()
         .abs()
+        .round(2)
         .sort_index()
         .rename(index=days)
         .reset_index()

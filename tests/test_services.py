@@ -9,7 +9,7 @@ from src.services import currency_rates, investment_bank, stock_prices
 
 load_dotenv()
 
-apilayer_api_key = os.getenv("APILAYER_API_KEY")
+exchangerate_api_key = os.getenv("EXCHANGERATE_API_KEY")
 
 
 @patch("src.services.requests.get")
@@ -18,8 +18,8 @@ def test_currency_rates(mock_get: Mock) -> None:
     """Проверяет получение и преобразование курсов валют"""
 
     mock_get.return_value.json.return_value = {
-        "success": True,
-        "rates": {
+        "result": "success",
+        "conversion_rates": {
             "USD": 0.01,
             "EUR": 0.012,
         },
@@ -33,9 +33,8 @@ def test_currency_rates(mock_get: Mock) -> None:
     ]
 
     mock_get.assert_called_once_with(
-        "https://api.apilayer.com/exchangerates_data/latest",
-        headers={"apikey": apilayer_api_key},
-        params={"base": "RUB", "symbols": "USD,EUR"},
+        f"https://v6.exchangerate-api.com/v6/"
+        f"{exchangerate_api_key}/latest/RUB",
     )
 
 
@@ -43,15 +42,17 @@ def test_currency_rates(mock_get: Mock) -> None:
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD"]}'))
 def test_currency_rates_error(mock_get: Mock) -> None:
     """Проверяет обработку ошибки при получении курсов валют от API"""
-    mock_get.return_value.json.return_value = {"success": False}
+    mock_get.return_value.json.return_value = {
+        "result": "error",
+        "error-type": "invalid-key",
+    }
 
     with pytest.raises(ValueError, match="Не удалось получить курсы валют"):
         currency_rates()
 
     mock_get.assert_called_once_with(
-        "https://api.apilayer.com/exchangerates_data/latest",
-        headers={"apikey": apilayer_api_key},
-        params={"base": "RUB", "symbols": "USD"},
+        f"https://v6.exchangerate-api.com/v6/"
+        f"{exchangerate_api_key}/latest/RUB"
     )
 
 
@@ -60,9 +61,9 @@ def test_currency_rates_error(mock_get: Mock) -> None:
 def test_currency_rates_http_error(mock_raise: Mock) -> None:
     """Проверяет обработку HTTP-ошибки при запросе курсов валют"""
 
-    mock_raise.return_value.raise_for_status.side_effect = requests.exceptions.HTTPError
+    mock_raise.return_value.raise_for_status.side_effect = requests.exceptions.HTTPError("Ошибка HTTP")
 
-    with pytest.raises(requests.exceptions.HTTPError):
+    with pytest.raises(requests.exceptions.HTTPError, match="Ошибка HTTP"):
         currency_rates()
 
     mock_raise.return_value.json.assert_not_called()
