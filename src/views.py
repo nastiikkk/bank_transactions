@@ -26,7 +26,9 @@ def get_date_range(
     return date_from, date_obj + timedelta(days=1)
 
 
-def expenses(date_from: datetime, date_to: datetime, data: pd.DataFrame):
+def expenses(
+    date_from: datetime, date_to: datetime, data: pd.DataFrame
+) -> dict[str, dict]:
     """Рассчитывает расходы за выбранный период и группирует их по категориям"""
     expense_operations = data[
         (data["Сумма операции"] < 0)
@@ -73,7 +75,9 @@ def expenses(date_from: datetime, date_to: datetime, data: pd.DataFrame):
     }
 
 
-def income(date_from: datetime, date_to: datetime, data: pd.DataFrame):
+def income(
+    date_from: datetime, date_to: datetime, data: pd.DataFrame
+) -> dict[str, dict]:
     """Рассчитывает поступления за выбранный период и группирует их по категориям"""
     income_operations = data[
         (data["Сумма операции"] > 0)
@@ -97,7 +101,7 @@ def income(date_from: datetime, date_to: datetime, data: pd.DataFrame):
     return {"income": {"total_amount": total_amount, "main": main_group}}
 
 
-def main(date: str, param: str = "M"):
+def main(date: str, param: str = "M") -> dict:
     operations = convert_dates(read_excel_file())
 
     earliest_date = operations["Дата операции"].min()
