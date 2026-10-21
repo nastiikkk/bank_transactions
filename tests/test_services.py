@@ -1,5 +1,5 @@
 import os
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open, patch, Mock
 
 import pytest
 import requests
@@ -14,7 +14,7 @@ apilayer_api_key = os.getenv("APILAYER_API_KEY")
 
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD", "EUR"]}'))
-def test_currency_rates(mock_get) -> None:
+def test_currency_rates(mock_get: Mock) -> None:
 
     mock_get.return_value.json.return_value = {
         "success": True,
@@ -40,7 +40,7 @@ def test_currency_rates(mock_get) -> None:
 
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD"]}'))
-def test_currency_rates_error(mock_get) -> None:
+def test_currency_rates_error(mock_get: Mock) -> None:
     mock_get.return_value.json.return_value = {"success": False}
 
     with pytest.raises(ValueError, match="Не удалось получить курсы валют"):
@@ -55,7 +55,7 @@ def test_currency_rates_error(mock_get) -> None:
 
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD", "EUR"]}'))
-def test_currency_rates_http_error(mock_raise) -> None:
+def test_currency_rates_http_error(mock_raise: Mock) -> None:
 
     mock_raise.return_value.raise_for_status.side_effect = requests.exceptions.HTTPError
 
@@ -68,7 +68,7 @@ def test_currency_rates_http_error(mock_raise) -> None:
 @patch("src.services.time.sleep")
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_stocks": ["AAPL"]}'))
-def test_stock_prices(mock_get, mock_sleep) -> None:
+def test_stock_prices(mock_get: Mock, mock_sleep: Mock) -> None:
     mock_get.return_value.json.return_value = {"Global Quote": {"05. price": "1.1234"}}
 
     result = stock_prices()
@@ -81,7 +81,7 @@ def test_stock_prices(mock_get, mock_sleep) -> None:
 @patch("src.services.time.sleep")
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_stocks": ["AAPL"]}'))
-def test_stock_prices_error(mock_get, mock_sleep) -> None:
+def test_stock_prices_error(mock_get: Mock, mock_sleep: Mock) -> None:
     mock_get.return_value.json.return_value = {}
 
     with pytest.raises(ValueError, match="Не удалось получить цену акции"):

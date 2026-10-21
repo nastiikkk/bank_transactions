@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pandas as pd
 import pytest
@@ -171,12 +171,12 @@ def test_income_empty_result(operations: pd.DataFrame) -> None:
 @patch("src.views.convert_dates")
 @patch("src.views.read_excel_file")
 def test_main(
-    mock_read_excel,
-    mock_convert_dates,
-    mock_expenses,
-    mock_income,
-    mock_stock_prices,
-    mock_currency_rates,
+    mock_read_excel: Mock,
+    mock_convert_dates: Mock,
+    mock_expenses: Mock,
+    mock_income: Mock,
+    mock_stock_prices: Mock,
+    mock_currency_rates: Mock,
 ) -> None:
 
     operations = pd.DataFrame(

@@ -37,6 +37,9 @@ def currency_rates() -> list[dict]:
 
     params = {"base": "RUB", "symbols": ",".join(currencies)}
 
+    if apilayer_api_key is None:
+        raise ValueError("APILAYER_API_KEY не найден в переменных окружения")
+
     headers = {"apikey": apilayer_api_key}
     response = requests.get(url, headers=headers, params=params)
 
@@ -54,8 +57,12 @@ def currency_rates() -> list[dict]:
     ]
 
 
-def stock_prices() -> list:
+def stock_prices() -> list[dict]:
     """Получает стоимость акций из S&P 500 через API"""
+    if alpha_vantage_api_key is None:
+        raise ValueError(
+            "ALPHA_VANTAGE_ACCESS_KEY не найден в переменных окружения"
+        )
     with open(path, "r") as file:
         settings = json.load(file)
     stocks = settings["user_stocks"]

@@ -102,7 +102,7 @@ def income(
     ]
     total_amount = round(income_operations["Сумма операции"].sum())
 
-    main_group = (
+    main_group_dict = (
         income_operations.groupby("Категория")["Сумма операции"]
         .sum()
         .sort_values(ascending=False)
@@ -111,7 +111,7 @@ def income(
 
     main_group = [
         {"category": category, "amount": round(amount)}
-        for category, amount in main_group.items()
+        for category, amount in main_group_dict.items()
     ]
     logger.info("Расчет поступлений завершен")
     return {"income": {"total_amount": total_amount, "main": main_group}}

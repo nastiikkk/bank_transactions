@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pandas as pd
 import pytest
@@ -14,7 +14,7 @@ def test_read_excel_file() -> None:
 
 
 @patch("src.utils.pd.read_excel")
-def test_read_excel_file_error(mock_read_excel) -> None:
+def test_read_excel_file_error(mock_read_excel: Mock) -> None:
     mock_read_excel.side_effect = ValueError("Не удалось прочитать файл")
 
     with pytest.raises(ValueError, match="Не удалось прочитать файл"):

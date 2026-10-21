@@ -22,13 +22,13 @@ def spending_by_weekday(
     transactions: pd.DataFrame, date: Optional[str] = None
 ) -> pd.DataFrame:
 
-    if not date:
-        date = datetime.now()
+    if date is None:
+        date_obj = datetime.now()
     else:
-        date = datetime.strptime(date, "%d.%m.%Y")
+        date_obj = datetime.strptime(date, "%d.%m.%Y")
 
-    date_to = date + relativedelta(days=1)
-    date_from = date - relativedelta(months=3)
+    date_to = date_obj + relativedelta(days=1)
+    date_from = date_obj - relativedelta(months=3)
 
     transactions = convert_dates(transactions)
 
