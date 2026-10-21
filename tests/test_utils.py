@@ -17,7 +17,7 @@ def test_read_excel_file() -> None:
 def test_read_excel_file_error(mock_read_excel) -> None:
     mock_read_excel.side_effect = ValueError("Не удалось прочитать файл")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Не удалось прочитать файл"):
         read_excel_file()
 
 
@@ -33,4 +33,11 @@ def test_convert_dates_error() -> None:
     data = pd.DataFrame({"Дата операции": ["hello hello"]})
 
     with pytest.raises(ValueError):
+        convert_dates(data)
+
+
+def test_convert_dates_missed_column() -> None:
+    data = pd.DataFrame({"nothing here": ["hello hello"]})
+
+    with pytest.raises(KeyError):
         convert_dates(data)
