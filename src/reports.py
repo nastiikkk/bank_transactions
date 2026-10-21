@@ -1,23 +1,50 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from src.utils import convert_dates
+from functools import wraps
+from typing import Any, Callable, Optional
 
-path = Path(__file__).resolve().parent.parent / "logs" / "reports.log"
+
+path_to_log = Path(__file__).resolve().parent.parent / "logs" / "reports.log"
 
 logger = logging.getLogger("reports")
-file_handler = logging.FileHandler(path, "w", encoding="utf-8")
+file_handler = logging.FileHandler(path_to_log, "w", encoding="utf-8")
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel("DEBUG")
 
 
+def save_report(
+    func: Optional[Callable] = None,
+    filename: str = "weekday_report.csv",
+) -> Callable:
+    """Сохраняет результат функции-отчёта в CSV-файл."""
+
+    def decorator(report_func: Callable) -> Callable:
+        @wraps(report_func)
+        def wrapper(*args: Any, **kwargs: Any) -> pd.DataFrame:
+            result = report_func(*args, **kwargs)
+
+            path_to_report = Path(__file__).resolve().parent.parent / "reports" / filename
+
+            result.to_csv(path_to_report, index=False, encoding="utf-8")
+
+            return result
+
+        return wrapper
+
+    if func is not None:
+        return decorator(func)
+
+    return decorator
+
+@save_report
 def spending_by_weekday(
     transactions: pd.DataFrame, date: Optional[str] = None
 ) -> pd.DataFrame:
