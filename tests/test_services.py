@@ -1,8 +1,15 @@
+import os
 from unittest.mock import mock_open, patch
 
 import pytest
+import requests
+from dotenv import load_dotenv
 
 from src.services import currency_rates, investment_bank, stock_prices
+
+load_dotenv()
+
+apilayer_api_key = os.getenv("APILAYER_API_KEY")
 
 
 @patch("src.services.requests.get")
@@ -24,14 +31,38 @@ def test_currency_rates(mock_get) -> None:
         {"currency": "EUR", "rate": 83.33},
     ]
 
+    mock_get.assert_called_once_with(
+        "https://api.apilayer.com/exchangerates_data/latest",
+        headers={"apikey": apilayer_api_key},
+        params={"base": "RUB", "symbols": "USD,EUR"},
+    )
+
 
 @patch("src.services.requests.get")
 @patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD"]}'))
 def test_currency_rates_error(mock_get) -> None:
     mock_get.return_value.json.return_value = {"success": False}
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Не удалось получить курсы валют"):
         currency_rates()
+
+    mock_get.assert_called_once_with(
+        "https://api.apilayer.com/exchangerates_data/latest",
+        headers={"apikey": apilayer_api_key},
+        params={"base": "RUB", "symbols": "USD"},
+    )
+
+
+@patch("src.services.requests.get")
+@patch("builtins.open", mock_open(read_data='{"user_currencies": ["USD", "EUR"]}'))
+def test_currency_rates_http_error(mock_raise) -> None:
+
+    mock_raise.return_value.raise_for_status.side_effect = requests.exceptions.HTTPError
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        currency_rates()
+
+    mock_raise.return_value.json.assert_not_called()
 
 
 @patch("src.services.time.sleep")
@@ -44,6 +75,7 @@ def test_stock_prices(mock_get, mock_sleep) -> None:
 
     assert result == [{"stock": "AAPL", "price": 1.12}]
     mock_sleep.assert_called_once_with(1)
+    mock_get.assert_called_once()
 
 
 @patch("src.services.time.sleep")
@@ -52,7 +84,7 @@ def test_stock_prices(mock_get, mock_sleep) -> None:
 def test_stock_prices_error(mock_get, mock_sleep) -> None:
     mock_get.return_value.json.return_value = {}
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Не удалось получить цену акции"):
         stock_prices()
 
     mock_sleep.assert_not_called()
@@ -60,13 +92,19 @@ def test_stock_prices_error(mock_get, mock_sleep) -> None:
 
 def test_investment_bank() -> None:
     result = investment_bank(
-        "2026-10", [{"Дата операции": "2026-10-11", "Сумма операции": 1023}], 100
+        "2026-10",
+        [
+            {"Дата операции": "2026-10-11", "Сумма операции": 1023},
+            {"Дата операции": "2026-10-23", "Сумма операции": 100},
+            {"Дата операции": "2026-10-01", "Сумма операции": 2304},
+        ],
+        100,
     )
 
-    assert result == 77
+    assert result == 173
 
 
-def test_investment_bank_error() -> None:
+def test_investment_bank_transaction_outside_month() -> None:
     result = investment_bank(
         "2026-01", [{"Дата операции": "2026-10-11", "Сумма операции": 1023}], 100
     )
