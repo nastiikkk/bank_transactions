@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -117,7 +118,7 @@ def income(
     return {"income": {"total_amount": total_amount, "main": main_group}}
 
 
-def main(date: str, param: str = "M") -> dict:
+def main(date: str, param: str = "M") -> str:
     """Формирует данные для главной страницы банковского приложения"""
     logger.info("Начата обработка главной страницы")
     operations = convert_dates(read_excel_file())
@@ -130,9 +131,13 @@ def main(date: str, param: str = "M") -> dict:
     stocks = stock_prices()
     rates = currency_rates()
     logger.info("Обработка главной страницы завершена")
-    return {
-        **expense,
-        **incomes,
-        "currency_rates": rates,
-        "stock_prices": stocks,
-    }
+    return json.dumps(
+        {
+            "expenses": expense,
+            "income": incomes,
+            "currency_rates": rates,
+            "stock_prices": stocks,
+        },
+        ensure_ascii=False,
+        indent=4,
+    )

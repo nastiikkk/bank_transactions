@@ -1,7 +1,7 @@
 from src.reports import spending_by_weekday
 from src.utils import read_excel_file
 from src.views import main as get_main_page
-
+import json
 
 def main() -> None:
     """Запускает приложение"""
@@ -18,7 +18,9 @@ def main() -> None:
             period = input("Период (W - неделя, M - месяц, Y - год, ALL - всё): ")
 
             result = get_main_page(date, period)
-            print(result)
+
+
+            print('\n', result, '\n')
 
 
 
@@ -26,30 +28,41 @@ def main() -> None:
 
             transactions = read_excel_file()
 
-            choice_date = input(
+            while True:
 
-                "Хотите указать дату, для которой рассчитать средние траты по дням недели? (да/нет): "
+                choice_date = input(
 
-            ).lower()
+                    "Хотите указать дату, для которой рассчитать средние траты по дням недели? (да/нет): "
 
-            if choice_date == "да":
+                ).lower()
 
-                date = input("Введите дату (ДД.ММ.ГГГГ): ")
+                if choice_date == "да":
 
-                report = spending_by_weekday(transactions, date=date)
+                    date = input("Введите дату (ДД.ММ.ГГГГ): ")
 
+                    report = spending_by_weekday(transactions, date=date)
+
+                    break
+
+                elif choice_date == 'нет':
+
+                    report = spending_by_weekday(transactions)
+
+                    break
+                else:
+                    print("\nОшибка! Пожалуйста, введите «да» или «нет»\n")
+
+            if report.empty:
+                print("\nПо выбранным параметрам не удалось найти данные\n")
             else:
-
-                report = spending_by_weekday(transactions)
-
-            print(report.to_string(index=False))
+                print('\n', report.to_string(index=False), '\n')
 
         elif choice == "0":
             print("До встречи!")
             break
 
         else:
-            print("Некорректный выбор. Попробуйте ещё раз.")
+            print("Некорректный выбор. Попробуйте ещё раз\n")
 
 
 if __name__ == "__main__":
