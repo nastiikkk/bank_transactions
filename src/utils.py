@@ -6,6 +6,7 @@ path = Path(__file__).resolve().parent.parent / "data" / "operations.xlsx"
 
 
 def read_excel_file() -> pd.DataFrame:
+    """Читает Excel-файл"""
     return pd.read_excel(path)
 
 

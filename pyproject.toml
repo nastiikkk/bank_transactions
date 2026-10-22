@@ -22,3 +22,9 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pandas-stubs (>=3.0.5.260914,<4.0.0.0)",
+    "types-python-dateutil (>=2.9.0.20261021,<3.0.0.0)"
+]

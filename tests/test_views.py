@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -17,7 +17,7 @@ from src.views import expenses, get_date_range, income, main
     ],
 )
 def test_get_date_range(param: str, expected_from: datetime) -> None:
-
+    """Проверяет определение диапазона дат для разных периодов"""
     earliest_date = datetime(2017, 1, 1)
 
     date_from, date_to = get_date_range("21.10.2026", param, earliest_date)
@@ -27,6 +27,7 @@ def test_get_date_range(param: str, expected_from: datetime) -> None:
 
 
 def test_get_date_range_error() -> None:
+    """Проверяет обработку некорректного параметра периода"""
     earliest_date = datetime(2017, 1, 1)
     incorrect_param = "Hello"
 
@@ -36,6 +37,7 @@ def test_get_date_range_error() -> None:
 
 @pytest.fixture
 def operations():
+    """Создаёт тестовый DataFrame с банковскими операциями"""
     return pd.DataFrame(
         {
             "Дата операции": [
@@ -82,6 +84,7 @@ def operations():
 
 
 def test_expenses(operations: pd.DataFrame) -> None:
+    """Проверяет расчёт расходов и распределение по категориям"""
     date_from = datetime(2026, 1, 1)
     date_to = datetime(2026, 12, 30)
     result = expenses(date_from, date_to, operations)
@@ -108,6 +111,7 @@ def test_expenses(operations: pd.DataFrame) -> None:
 
 
 def test_expenses_empty_result(operations: pd.DataFrame) -> None:
+    """Проверяет результат при отсутствии расходов за период"""
     date_from = datetime(2026, 9, 5)
     date_to = datetime(2026, 9, 9)
     result = expenses(date_from, date_to, operations)
@@ -121,7 +125,8 @@ def test_expenses_empty_result(operations: pd.DataFrame) -> None:
     }
 
 
-def test_expenses_transfers(operations: pd.DataFrame) -> None:
+def test_expenses_transfers_and_cash(operations: pd.DataFrame) -> None:
+    """Проверяет обработку переводов и снятия наличных"""
     date_from = datetime(2026, 11, 1)
     date_to = datetime(2026, 11, 30)
     result = expenses(date_from, date_to, operations)
@@ -139,6 +144,7 @@ def test_expenses_transfers(operations: pd.DataFrame) -> None:
 
 
 def test_income(operations: pd.DataFrame) -> None:
+    """Проверяет расчёт доходов и распределение по категориям"""
     date_from = datetime(2026, 1, 13)
     date_to = datetime(2026, 10, 21)
     result = income(date_from, date_to, operations)
@@ -152,6 +158,7 @@ def test_income(operations: pd.DataFrame) -> None:
 
 
 def test_income_empty_result(operations: pd.DataFrame) -> None:
+    """Проверяет результат при отсутствии доходов за период"""
     date_from = datetime(2023, 1, 1)
     date_to = datetime(2024, 1, 1)
     result = income(date_from, date_to, operations)
@@ -171,14 +178,14 @@ def test_income_empty_result(operations: pd.DataFrame) -> None:
 @patch("src.views.convert_dates")
 @patch("src.views.read_excel_file")
 def test_main(
-    mock_read_excel,
-    mock_convert_dates,
-    mock_expenses,
-    mock_income,
-    mock_stock_prices,
-    mock_currency_rates,
+    mock_read_excel: Mock,
+    mock_convert_dates: Mock,
+    mock_expenses: Mock,
+    mock_income: Mock,
+    mock_stock_prices: Mock,
+    mock_currency_rates: Mock,
 ) -> None:
-
+    """Проверяет формирование данных главной страницы приложения"""
     operations = pd.DataFrame(
         {
             "Дата операции": [datetime(2026, 10, 10)],
