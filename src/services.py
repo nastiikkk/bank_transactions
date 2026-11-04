@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-apilayer_api_key = os.getenv("APILAYER_API_KEY")
+exchangerate_api_key = os.getenv("EXCHANGERATE_API_KEY")
 alpha_vantage_api_key = os.getenv("ALPHA_VANTAGE_ACCESS_KEY")
 path = Path(__file__).resolve().parent.parent / "user_settings.json"
 
@@ -19,6 +19,8 @@ path = Path(__file__).resolve().parent.parent / "user_settings.json"
 path_to_log = Path(__file__).resolve().parent.parent / "logs" / "services.log"
 logger = logging.getLogger("services")
 file_handler = logging.FileHandler(path_to_log, "w", encoding="utf-8")
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel("DEBUG")
 
@@ -31,29 +33,33 @@ def currency_rates() -> list[dict]:
 
     currencies = settings["user_currencies"]
 
-    url = "https://api.apilayer.com/exchangerates_data/latest"
+    if exchangerate_api_key is None:
+        raise ValueError("EXCHANGERATE_API_KEY не найден в переменных окружения")
 
-    params = {"base": "RUB", "symbols": ",".join(currencies)}
-
-    headers = {"apikey": apilayer_api_key}
-    response = requests.get(url, headers=headers, params=params)
+    url = (
+        f"https://v6.exchangerate-api.com/v6/"
+        f"{exchangerate_api_key}/latest/RUB"
+    )
+    response = requests.get(url)
 
     response.raise_for_status()
 
     response = response.json()
 
-    if response.get("success") is False:
+    if response.get("result") != "success":
         raise ValueError("Не удалось получить курсы валют")
 
-    rates = response["rates"]
+    rates = response["conversion_rates"]
     return [
         {"currency": currency, "rate": round(1 / rates[currency], 2)}
         for currency in currencies
     ]
 
 
-def stock_prices() -> list:
+def stock_prices() -> list[dict]:
     """Получает стоимость акций из S&P 500 через API"""
+    if alpha_vantage_api_key is None:
+        raise ValueError("ALPHA_VANTAGE_ACCESS_KEY не найден в переменных окружения")
     with open(path, "r") as file:
         settings = json.load(file)
     stocks = settings["user_stocks"]
@@ -86,6 +92,7 @@ def stock_prices() -> list:
 def investment_bank(
     month: str, transactions: List[Dict[str, Any]], limit: int
 ) -> float:
+    """Возвращает сумму, которую удалось бы отложить в «Инвесткопилку»"""
     logger.info("Начат расчет накоплений за месяц")
     date_obj = datetime.strptime(month, "%Y-%m")
 
